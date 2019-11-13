@@ -22,6 +22,7 @@ if __name__ == '__main__':
             number = int(input_str)
             if number in  lists:
                 process(number)
+                print(choice)
             else:
                 print("请输入正确数字{}！".format(lists))
         except:
