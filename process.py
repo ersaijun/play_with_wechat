@@ -6,8 +6,10 @@ import jieba
 from wordcloud import WordCloud,STOPWORDS
 import numpy as np
 import os
+import wc2char
 
 friends = None
+downloaded_avatar = False
 
 # 创建存放文件夹
 def create_filepath(path_name):
@@ -21,6 +23,26 @@ def login_success():
 
 def developing():
     print("功能开发中...")
+
+# 下载头像
+def download_avatar():
+    global downloaded_avatar
+    avatar_dir = create_filepath('avatar')
+    
+    print("头像下载中，请稍等...")
+    if not downloaded_avatar:  
+        num = 0
+        for friend in friends:
+            friend.get_avatar(avatar_dir + '\\' + str(num) + '.jpg')
+            # print("昵称 ： %s" % friend.nick_name)
+            num+=1
+
+            if num % 20 == 0:
+                print("头像读取中，请耐心等待{}%".format(round(num/len(friends)*100,2)),end='\r')
+
+        downloaded_avatar = True
+    print('\n')
+    return avatar_dir
 
 def process(number):
     if number == 1:
@@ -40,20 +62,15 @@ def process(number):
 
 def gen_avatar():
     print("#1 ----生成所有微信好友图片墙----")
-    avatar_dir = create_filepath('#1-avatar')
     
     # 保存好友头像
 	# 初始化机器人，扫码登录
     global friends
     if friends == None:
-        bot = Bot(cache_path=True,console_qr=True )
+        bot = Bot(console_qr=True, login_callback=login_success )
         friends = bot.friends(update=True)
-
-    num = 0
-    for friend in friends:
-        friend.get_avatar(avatar_dir + '\\' + str(num) + '.jpg')
-        print("昵称 ： %s" % friend.nick_name)
-        num+=1
+    
+    avatar_dir = download_avatar()
         
 
     # 拼接头像
@@ -89,7 +106,33 @@ def gen_avatar():
     plt.show()
     
 def gen_avatar_hanzi():
-    pass
+      # 初始化机器人，扫码登录
+    global friends
+    if friends == None:
+        bot = Bot( login_callback=login_success,console_qr=True) # 
+        friends = bot.friends(update=True) 
+
+    
+    print("#6 ----头像拼接汉字----")
+    input_str = input('请输入汉字（建议为6个或9个，用于微信六宫格或九宫格；包括标点符号）：')
+
+    #将字转化为汉字库的点阵数据
+    outlist = wc2char.char2bit(input_str)
+    #获取当前文件夹路径
+    workspace = os.getcwd()
+
+    avatar_dir = download_avatar()
+     #先读取用户本人头像，存储名为用户名称
+    selfHead = avatar_dir + '0.jpg'
+    
+    avatar_dir = "avatar"
+    print("生成中，请稍等...")
+     #将头像图片按点阵拼接成单字图片
+    wc2char.head2char(workspace,avatar_dir,selfHead,outlist)
+
+    print("完成！ 已输出至目录 avatar_output ")
+    print('#6 Finish!!')
+
 
 #统计好友的性别，微信中男性为1，女性为2，未知为0
 def gen_sex():
@@ -98,7 +141,7 @@ def gen_sex():
     # 初始化机器人，扫码登录
     global friends
     if friends == None:
-        bot = Bot(cache_path=True,console_qr=True, login_callback=login_success)
+        bot = Bot( login_callback=login_success) # console_qr=True,
         friends = bot.friends(update=True)
    
     # result = friends.stats_text()
@@ -146,7 +189,7 @@ def gen_word_cloud():
      # 初始化机器人，扫码登录
     global friends
     if friends == None:
-        bot = Bot(cache_path=True,console_qr=True)
+        bot = Bot(console_qr=True, login_callback=login_success) #cache_path=True,
         friends = bot.friends(update=True)
     
     # 获取好友签名信息并储存在 siglist 中
@@ -183,23 +226,24 @@ def gen_word_cloud():
     print('#3 Finish!!')
     print('wechatfriends_wordcloud.png 已保存至目录。')
 
-    # 情感分析 
-    
+
 # 共同好友检测
 def same_friend():
     print("#5 ----共同好友检测----")
     
+     # 初始化机器人，扫码登录
     global friends
     if friends == None:
-        bot = Bot(cache_path=False,console_qr=True)
+        bot = Bot(console_qr=True, login_callback=login_success)
         friends = bot.friends(update=True)
     
     print("请另一位同学扫码登录")
-    bot_tmp = Bot(cache_path=False,console_qr=True) #,console_qr=True
+    bot_tmp = Bot( login_callback=login_success,cache_path=False,console_qr=True) #,console_qr=True
     other_friend = bot_tmp.friends(update=True)
 
     result = mutual_friends(friends,other_friend)
 
+    print("共同好友有{}个".format(len(result)))
     for i in result:
         print(i)
 

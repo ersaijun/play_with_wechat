@@ -7,6 +7,8 @@
 """
 from intro import *
 from process import *
+import shutil
+import os
 
 if __name__ == '__main__':
     print(hello())
@@ -16,6 +18,9 @@ if __name__ == '__main__':
     while True:
         input_str = input('请选择游戏数字：')
         if input_str == 'z' or input_str == 'Z':
+            avatar_dir = os.getcwd() + '\\avatar'
+            if  os.path.exists(avatar_dir):
+                shutil.rmtree(avatar_dir)
             break
 
         try:
