@@ -3,7 +3,7 @@ import  math
 from  PIL import Image
 import matplotlib.pyplot as plt 
 import jieba
-from wordcloud import WordCloud,STOPWORDS
+from wordcloud import WordCloud
 import numpy as np
 import os
 import wc2char
